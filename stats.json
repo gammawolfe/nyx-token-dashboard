@@ -265,6 +265,20 @@
       },
       "model": "openrouter/x-ai/grok-4.1-fast",
       "uptime": "just now"
+    },
+    {
+      "timestamp": "2026-02-15T09:32:09Z",
+      "tokens": {
+        "in": 52,
+        "out": 884
+      },
+      "context": {
+        "used": 124000,
+        "total": 200000,
+        "percent": 62
+      },
+      "model": "openrouter/x-ai/grok-4.1-fast",
+      "uptime": "just now"
     }
   ]
 }
