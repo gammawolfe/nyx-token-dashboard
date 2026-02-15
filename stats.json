@@ -1,0 +1,18 @@
+{
+  "history": [
+    {
+      "timestamp": "2026-02-15T01:01:10Z",
+      "tokens": {
+        "in": 22,
+        "out": 237
+      },
+      "context": {
+        "used": 33,
+        "total": 200,
+        "percent": 16
+      },
+      "model": "openrouter/x-ai/grok-4.1-fast",
+      "uptime": "2m ago"
+    }
+  ]
+}
