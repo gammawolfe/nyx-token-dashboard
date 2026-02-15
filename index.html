@@ -60,6 +60,27 @@
             border-color: #6c63ff;
         }
         
+        .stat-card.alert-75 {
+            border-color: #ffaa00;
+            box-shadow: 0 0 15px rgba(255, 170, 0, 0.3);
+        }
+        
+        .stat-card.alert-90 {
+            border-color: #ff6b00;
+            box-shadow: 0 0 15px rgba(255, 107, 0, 0.4);
+        }
+        
+        .stat-card.alert-95 {
+            border-color: #ff0000;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+            animation: pulse-alert 2s infinite;
+        }
+        
+        @keyframes pulse-alert {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
         .stat-label {
             color: #888;
             font-size: 0.9em;
@@ -72,12 +93,91 @@
             font-weight: bold;
         }
         
+        .stat-subvalue {
+            font-size: 0.7em;
+            color: #999;
+            margin-top: 5px;
+        }
+        
         .chart-container {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 10px;
             padding: 20px;
             margin-bottom: 20px;
+        }
+        
+        .model-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .model-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .model-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .model-card:hover {
+            border-color: #6c63ff;
+            transform: translateY(-3px);
+        }
+        
+        .model-card.active {
+            border-color: #00ff88;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+            background: rgba(0, 255, 136, 0.05);
+        }
+        
+        .model-name {
+            font-size: 1.1em;
+            color: #6c63ff;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .model-card.active .model-name {
+            color: #00ff88;
+        }
+        
+        .model-alias {
+            color: #888;
+            font-size: 0.85em;
+            margin-bottom: 5px;
+        }
+        
+        .model-specs {
+            color: #aaa;
+            font-size: 0.8em;
+            margin-top: 8px;
+        }
+        
+        .model-badge {
+            display: inline-block;
+            background: #6c63ff;
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7em;
+            margin-top: 5px;
+            margin-right: 5px;
+        }
+        
+        .model-card.active .model-badge {
+            background: #00ff88;
+            color: #0a0a0a;
         }
         
         .status-indicator {
@@ -120,10 +220,23 @@
             transition: width 0.3s ease;
         }
         
+        .progress-fill.warning {
+            background: linear-gradient(90deg, #ffaa00 0%, #ff6b00 100%);
+        }
+        
+        .progress-fill.danger {
+            background: linear-gradient(90deg, #ff6b00 0%, #ff0000 100%);
+        }
+        
         .github-corner {
             position: fixed;
             top: 0;
             right: 0;
+        }
+        
+        h3 {
+            color: #6c63ff;
+            margin-bottom: 15px;
         }
     </style>
 </head>
@@ -146,6 +259,7 @@
             <div class="stat-card">
                 <div class="stat-label">Total Tokens</div>
                 <div class="stat-value" id="total-tokens">0</div>
+                <div class="stat-subvalue" id="burn-rate">0 tokens/min</div>
             </div>
             
             <div class="stat-card">
@@ -158,22 +272,31 @@
                 <div class="stat-value" id="output-tokens">0</div>
             </div>
             
-            <div class="stat-card">
+            <div class="stat-card" id="context-card">
                 <div class="stat-label">Context Usage</div>
                 <div class="stat-value" id="context-percent">0%</div>
+                <div class="stat-subvalue" id="context-details">0k / 200k</div>
                 <div class="progress-bar">
                     <div class="progress-fill" id="context-bar" style="width: 0%"></div>
                 </div>
             </div>
             
             <div class="stat-card">
-                <div class="stat-label">Current Model</div>
-                <div class="stat-value" style="font-size: 1em;" id="model-name">-</div>
+                <div class="stat-label">Session Uptime</div>
+                <div class="stat-value" style="font-size: 1.2em;" id="uptime">-</div>
             </div>
             
             <div class="stat-card">
-                <div class="stat-label">Session Uptime</div>
-                <div class="stat-value" style="font-size: 1.2em;" id="uptime">-</div>
+                <div class="stat-label">Estimated Cost</div>
+                <div class="stat-value" style="font-size: 1.5em;" id="estimated-cost">$0.00</div>
+                <div class="stat-subvalue" id="cost-breakdown">-</div>
+            </div>
+        </div>
+        
+        <div class="model-panel">
+            <h3>🧠 Available Models</h3>
+            <div class="model-grid" id="model-grid">
+                <!-- Models populated by JS -->
             </div>
         </div>
         
@@ -193,6 +316,66 @@
     </div>
     
     <script>
+        // Model database
+        const MODELS = [
+            {
+                name: 'Grok 4.1 Fast',
+                provider: 'xai/grok-4-1-fast',
+                alias: 'openrouter/x-ai/grok-4-1-fast',
+                context: 200000,
+                pricing: { input: 0.10, output: 0.30 }, // per 1M tokens
+                features: ['Fast', 'Default']
+            },
+            {
+                name: 'Claude Opus 4.6',
+                provider: 'anthropic/claude-opus-4-6',
+                alias: 'opus',
+                context: 200000,
+                pricing: { input: 15.00, output: 75.00 },
+                features: ['Premium', 'High Quality']
+            },
+            {
+                name: 'Claude Sonnet 4.5',
+                provider: 'anthropic/claude-sonnet-4-5',
+                alias: 'sonnet',
+                context: 200000,
+                pricing: { input: 3.00, output: 15.00 },
+                features: ['Balanced']
+            },
+            {
+                name: 'ChatGPT 5.2',
+                provider: 'openai/gpt-5.2',
+                alias: null,
+                context: 128000,
+                pricing: { input: 2.50, output: 10.00 },
+                features: ['OpenAI']
+            },
+            {
+                name: 'Gemini 3 Flash Preview',
+                provider: 'google/gemini-3-flash-preview',
+                alias: null,
+                context: 1000000,
+                pricing: { input: 0.075, output: 0.30 },
+                features: ['Fast', 'Large Context']
+            },
+            {
+                name: 'Grok 4.1 Fast Reasoning',
+                provider: 'xai/grok-4-1-fast-reasoning',
+                alias: null,
+                context: 200000,
+                pricing: { input: 0.20, output: 0.60 },
+                features: ['Reasoning']
+            },
+            {
+                name: 'Kimi K2 Thinking',
+                provider: 'moonshotai/kimi-k2-thinking',
+                alias: 'openrouter/moonshotai/kimi-k2-thinking',
+                context: 128000,
+                pricing: { input: 0.50, output: 2.00 },
+                features: ['Thinking', 'Research']
+            }
+        ];
+        
         // Chart setup
         const tokenCtx = document.getElementById('tokenChart').getContext('2d');
         const contextCtx = document.getElementById('contextChart').getContext('2d');
@@ -261,30 +444,111 @@
             options: chartOptions
         });
         
+        // Render model cards
+        function renderModels(currentModel) {
+            const grid = document.getElementById('model-grid');
+            grid.innerHTML = '';
+            
+            MODELS.forEach(model => {
+                const isActive = currentModel.includes(model.provider) || 
+                                currentModel.includes(model.name.toLowerCase().replace(/\s+/g, '-'));
+                
+                const card = document.createElement('div');
+                card.className = `model-card ${isActive ? 'active' : ''}`;
+                
+                const badges = model.features.map(f => 
+                    `<span class="model-badge">${f}</span>`
+                ).join('');
+                
+                card.innerHTML = `
+                    <div class="model-name">${model.name} ${isActive ? '✓' : ''}</div>
+                    <div class="model-alias">${model.provider}</div>
+                    ${badges}
+                    <div class="model-specs">
+                        Context: ${(model.context / 1000).toFixed(0)}k tokens<br>
+                        Price: $${model.pricing.input}/$${model.pricing.output} per 1M tokens
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+        
+        // Calculate cost
+        function calculateCost(tokensIn, tokensOut, modelName) {
+            const model = MODELS.find(m => 
+                modelName.includes(m.provider) || 
+                modelName.includes(m.name.toLowerCase().replace(/\s+/g, '-'))
+            );
+            
+            if (!model) return { total: 0, breakdown: 'Unknown model' };
+            
+            const inputCost = (tokensIn / 1000000) * model.pricing.input;
+            const outputCost = (tokensOut / 1000000) * model.pricing.output;
+            const total = inputCost + outputCost;
+            
+            return {
+                total,
+                breakdown: `In: $${inputCost.toFixed(4)} • Out: $${outputCost.toFixed(4)}`
+            };
+        }
+        
         // Fetch and update data
         async function updateDashboard() {
             try {
-                // Fetch from same origin (GitHub Pages)
                 const response = await fetch('stats.json?t=' + Date.now());
                 const data = await response.json();
                 
                 if (data.history && data.history.length > 0) {
                     const latest = data.history[data.history.length - 1];
+                    const totalTokens = latest.tokens.in + latest.tokens.out;
+                    
+                    // Calculate burn rate (tokens per minute)
+                    let burnRate = 0;
+                    if (data.history.length >= 2) {
+                        const prev = data.history[data.history.length - 2];
+                        const timeDiff = (new Date(latest.timestamp) - new Date(prev.timestamp)) / 60000; // minutes
+                        const tokenDiff = (latest.tokens.in + latest.tokens.out) - 
+                                         (prev.tokens.in + prev.tokens.out);
+                        burnRate = timeDiff > 0 ? Math.round(tokenDiff / timeDiff) : 0;
+                    }
                     
                     // Update stat cards
-                    document.getElementById('total-tokens').textContent = 
-                        (latest.tokens.in + latest.tokens.out).toLocaleString();
-                    document.getElementById('input-tokens').textContent = 
-                        latest.tokens.in.toLocaleString();
-                    document.getElementById('output-tokens').textContent = 
-                        latest.tokens.out.toLocaleString();
-                    document.getElementById('context-percent').textContent = 
-                        latest.context.percent + '%';
-                    document.getElementById('context-bar').style.width = 
-                        latest.context.percent + '%';
-                    document.getElementById('model-name').textContent = 
-                        latest.model.split('/').pop();
+                    document.getElementById('total-tokens').textContent = totalTokens.toLocaleString();
+                    document.getElementById('burn-rate').textContent = `${burnRate} tokens/min`;
+                    document.getElementById('input-tokens').textContent = latest.tokens.in.toLocaleString();
+                    document.getElementById('output-tokens').textContent = latest.tokens.out.toLocaleString();
+                    document.getElementById('context-percent').textContent = latest.context.percent + '%';
+                    document.getElementById('context-details').textContent = 
+                        `${latest.context.used}k / ${latest.context.total}k`;
+                    
+                    // Context alerts
+                    const contextCard = document.getElementById('context-card');
+                    const contextBar = document.getElementById('context-bar');
+                    contextCard.classList.remove('alert-75', 'alert-90', 'alert-95');
+                    contextBar.classList.remove('warning', 'danger');
+                    
+                    if (latest.context.percent >= 95) {
+                        contextCard.classList.add('alert-95');
+                        contextBar.classList.add('danger');
+                    } else if (latest.context.percent >= 90) {
+                        contextCard.classList.add('alert-90');
+                        contextBar.classList.add('danger');
+                    } else if (latest.context.percent >= 75) {
+                        contextCard.classList.add('alert-75');
+                        contextBar.classList.add('warning');
+                    }
+                    
+                    contextBar.style.width = latest.context.percent + '%';
                     document.getElementById('uptime').textContent = latest.uptime || '-';
+                    
+                    // Cost calculation
+                    const cost = calculateCost(latest.tokens.in, latest.tokens.out, latest.model);
+                    document.getElementById('estimated-cost').textContent = `$${cost.total.toFixed(4)}`;
+                    document.getElementById('cost-breakdown').textContent = cost.breakdown;
+                    
+                    // Render models
+                    renderModels(latest.model);
                     
                     // Update charts
                     const labels = data.history.map(entry => {
@@ -292,7 +556,7 @@
                         return time.toLocaleTimeString();
                     });
                     
-                    tokenChart.data.labels = labels.slice(-30); // Last 30 points
+                    tokenChart.data.labels = labels.slice(-30);
                     tokenChart.data.datasets[0].data = data.history.slice(-30).map(e => e.tokens.in);
                     tokenChart.data.datasets[1].data = data.history.slice(-30).map(e => e.tokens.out);
                     tokenChart.update();
@@ -309,7 +573,7 @@
             }
         }
         
-        // Update every 5 seconds (GitHub Pages cache)
+        // Update every 5 seconds
         updateDashboard();
         setInterval(updateDashboard, 5000);
     </script>
