@@ -26,8 +26,8 @@ if command -v jq &> /dev/null; then
     NEW_ENTRY=$(cat <<EOF
 {
   "timestamp": "$TIMESTAMP",
-  "tokens": { "in": $TOKENS_IN, "out": $TOKENS_OUT },
-  "context": { "used": $CONTEXT_USED, "total": $CONTEXT_TOTAL, "percent": $CONTEXT_PERCENT },
+  "tokens": { "in": "$TOKENS_IN", "out": "$TOKENS_OUT" },
+  "context": { "used": "$CONTEXT_USED", "total": "$CONTEXT_TOTAL", "percent": "$CONTEXT_PERCENT" },
   "model": "$MODEL",
   "uptime": "$UPTIME"
 }
@@ -44,8 +44,8 @@ with open('stats.json', 'r') as f:
 
 new_entry = {
     "timestamp": "$TIMESTAMP",
-    "tokens": { "in": $TOKENS_IN, "out": $TOKENS_OUT },
-    "context": { "used": $CONTEXT_USED, "total": $CONTEXT_TOTAL, "percent": $CONTEXT_PERCENT },
+    "tokens": { "in": "$TOKENS_IN", "out": "$TOKENS_OUT" },
+    "context": { "used": "$CONTEXT_USED", "total": "$CONTEXT_TOTAL", "percent": "$CONTEXT_PERCENT" },
     "model": "$MODEL",
     "uptime": "$UPTIME"
 }
