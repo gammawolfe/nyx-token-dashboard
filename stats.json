@@ -1,0 +1,18 @@
+{
+  "history": [
+    {
+      "timestamp": "2026-02-19T04:50:55Z",
+      "tokens": {
+        "in": "10",
+        "out": "2500"
+      },
+      "context": {
+        "used": "152",
+        "total": "200",
+        "percent": "76"
+      },
+      "model": "anthropic/claude-sonnet-4-5",
+      "uptime": "unknown"
+    }
+  ]
+}
