@@ -97,6 +97,20 @@
       },
       "model": "anthropic/claude-sonnet-4-5",
       "uptime": "unknown"
+    },
+    {
+      "timestamp": "2026-02-19T08:20:41Z",
+      "tokens": {
+        "in": "6",
+        "out": "555"
+      },
+      "context": {
+        "used": "134",
+        "total": "200",
+        "percent": "67"
+      },
+      "model": "anthropic/claude-sonnet-4-5",
+      "uptime": "unknown"
     }
   ]
 }
