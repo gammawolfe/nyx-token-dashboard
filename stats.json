@@ -2127,6 +2127,20 @@
       },
       "model": "anthropic/claude-sonnet-4-5",
       "uptime": "10h"
+    },
+    {
+      "timestamp": "2026-02-26T14:37:24Z",
+      "tokens": {
+        "in": "81",
+        "out": "970"
+      },
+      "context": {
+        "used": "200000",
+        "total": "200000",
+        "percent": "100"
+      },
+      "model": "anthropic/claude-sonnet-4-5",
+      "uptime": "10h30m"
     }
   ]
 }
