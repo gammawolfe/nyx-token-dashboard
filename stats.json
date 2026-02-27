@@ -2421,6 +2421,20 @@
       },
       "model": "anthropic/claude-sonnet-4-5",
       "uptime": "22h40m"
+    },
+    {
+      "timestamp": "2026-02-27T03:17:49Z",
+      "tokens": {
+        "in": "81",
+        "out": "973"
+      },
+      "context": {
+        "used": "200000",
+        "total": "200000",
+        "percent": "100"
+      },
+      "model": "anthropic/claude-sonnet-4-5",
+      "uptime": "23h10m"
     }
   ]
 }
